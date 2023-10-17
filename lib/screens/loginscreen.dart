@@ -91,9 +91,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  
-
-
   void loginWithPhone() async {
     String enteredPhoneNumber = phoneNumberController.text;
     if (enteredPhoneNumber.length == 10) {
@@ -171,24 +168,39 @@ class _LoginScreenState extends State<LoginScreen> {
       // print("printing isUserLoggedIn testing value here");
     }
   }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
+
   var isUserLoggedIn;
 
   Future<void> setBoolValue() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
-         prefs.setString('isUserLoggedIn', 'true');
+        prefs.setString('isUserLoggedIn', 'true');
         isUserLoggedIn = prefs.getString('isUserLoggedIn');
       });
       // print("printing isUserLoggedIn testing value here");
     }
-
     print("isUserLoggedIn - YES");
+  }
+
+  var userDocumentId;
+
+  Future<void> setDocumentIdValue(String currentId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        prefs.setString('userDocumentId', currentId);
+        userDocumentId = prefs.getString('isUserLoggedIn');
+      });
+    }
+    print("userDocumentId - YES");
+    print("user document id which is saved $userDocumentId");
   }
 
   void verifyOTP() async {
@@ -272,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       prefs.setString('documentReferenceId', documentReferenceId);
       print('Document ID: $documentReferenceId');
-      await getDocumentReferenceId();
+      await setDocumentIdValue(customUserId);
       print("testing document id $documentReferenceIdTesting");
       print(ipAddress);
       print(_cityName);
@@ -281,7 +293,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await Future.delayed(const Duration(seconds: 3), () {
         // Use the Navigator to navigate to a new page
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const PluginScreen()),
+          MaterialPageRoute(
+              builder: (context) => PluginScreen(
+                    currentUserId: customUserId,
+                  )),
         );
       });
 
@@ -411,7 +426,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   print("otp code status $otpCodeVisible");
                                   print("verify otp pressed");
                                   await setBoolValue();
-                                  print("printing isUserLogged in value inside verify button $isUserLoggedIn");
+                                  print(
+                                      "printing isUserLogged in value inside verify button $isUserLoggedIn");
                                   verifyOTP();
                                 } else {
                                   loginWithPhone();

@@ -11,6 +11,17 @@ class Services {
          .snapshots();
    }
 
+   Stream<QuerySnapshot> getItemsToday() {
+     DateTime today = DateTime.now();
+     DateTime tomorrow = today.add(Duration(days: 1));
+
+     return firestore
+         .collection('user_details')
+         .where('datetime', isGreaterThanOrEqualTo: today)
+         .where('datetime', isLessThan: tomorrow)
+         .snapshots();
+   }
+
    Future<String?> getLastDatetime() async {
      final itemsStream = getItems();
      final itemsList = await itemsStream.first;

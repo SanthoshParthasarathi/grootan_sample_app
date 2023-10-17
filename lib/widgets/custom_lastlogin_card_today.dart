@@ -5,30 +5,37 @@ import 'package:grootan_app/widgets/custom_listtile.dart';
 class CustomListViewCardWidget extends StatelessWidget {
   final QuerySnapshot snapshot;
 
-  const CustomListViewCardWidget(this.snapshot, {super.key});
+  const CustomListViewCardWidget(this.snapshot, {Key? key});
 
   @override
   Widget build(BuildContext context) {
+    // Get the current date
+    DateTime today = DateTime.now();
+    // Create a DateTime object for the start of today (midnight)
+    DateTime startOfToday = DateTime(today.year, today.month, today.day);
+
+    // Filter the documents to include only those with a datetime field equal to or greater than startOfToday
+    List<QueryDocumentSnapshot> todayDocuments = snapshot.docs.where((document) {
+      DateTime itemDateTime = DateTime.parse(document['datetime'] as String);
+      return itemDateTime.isAtSameMomentAs(startOfToday) || itemDateTime.isAfter(startOfToday);
+    }).toList();
+
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.58,
       child: ListView.builder(
         shrinkWrap: true,
-        // reverse: true,
-        // physics: const NeverScrollableScrollPhysics(),
-        itemCount: snapshot.docs.length,
+        itemCount: todayDocuments.length,
         itemBuilder: (context, index) {
-          DocumentSnapshot item = snapshot.docs[index];
-          // Use the null-aware operator (??) to provide a default value if the field is not present
+          DocumentSnapshot item = todayDocuments[index];
           String ipAddress = item['ipaddress'] ?? "";
           String location = item['location'] ?? "";
           String time = item['datetime'] ?? "";
-          // bool isQrAvailable = item['isQrAvailable'] ?? false;
           String qrCodeString = item['qrCodeString'] ?? "";
+
           return CustomListItem(
             ipAddress: ipAddress,
             location: location,
             time: time,
-            // isQrAvailable: isQrAvailable,
             qrCodeString: qrCodeString,
           );
         },
@@ -36,3 +43,4 @@ class CustomListViewCardWidget extends StatelessWidget {
     );
   }
 }
+

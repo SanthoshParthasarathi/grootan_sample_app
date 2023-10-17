@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:grootan_app/screens/loginscreen.dart';
 import 'package:grootan_app/services/services.dart';
-import 'package:grootan_app/widgets/last_login_custom_card.dart';
+import 'package:grootan_app/widgets/custom_lastlogin_card_others.dart';
+import 'package:grootan_app/widgets/custom_lastlogin_card_today.dart';
+import 'package:grootan_app/widgets/custom_lastlogin_card_yesterday.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants/constants.dart';
 import '../widgets/custom_listtile.dart';
@@ -163,18 +165,49 @@ class _LastLoginScreenState extends State<LastLoginScreen>
                         IndexedStack(
                           index: selectedIndex,
                           children: [
+                            /// today
                             StreamBuilder<QuerySnapshot>(
                               stream: Services().getItems(),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return Center(
-                                      child: const CircularProgressIndicator());
+                                  return const Center(
+                                      child: CircularProgressIndicator());
                                 }
                                 if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
                                 }
                                 return CustomListViewCardWidget(snapshot.data!);
+                              },
+                            ),
+                            /// yesterday
+                            StreamBuilder<QuerySnapshot>(
+                              stream: Services().getItems(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                }
+                                return CustomListViewCardWidgetYesterday(snapshot.data!);
+                              },
+                            ),
+                            /// other dates
+                            StreamBuilder<QuerySnapshot>(
+                              stream: Services().getItems(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator(color: Colors.amber,));
+                                }
+                                if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                }
+                                return CustomListViewCardWidgetOthers(snapshot.data!);
                               },
                             ),
                             // ListView.builder(
@@ -227,7 +260,13 @@ class _LastLoginScreenState extends State<LastLoginScreen>
                             height: MediaQuery.of(context).size.height * 0.08,
                             child: ElevatedButton(
                               onPressed: () {
-                                // Add your login button logic here
+                                  Fluttertoast.showToast(
+                                    msg: 'Already saved please logout to save another instance',
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    backgroundColor: blueColor,
+                                    textColor: Colors.white,
+                                  );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: buttonColor,

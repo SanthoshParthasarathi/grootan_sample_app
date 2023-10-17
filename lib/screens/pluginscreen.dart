@@ -311,7 +311,7 @@ class _PluginScreenState extends State<PluginScreen> {
                                 ),
                               ),
                               child: const Text(
-                                'Last Login at Today, 11 AM',
+                                'Last Login',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,

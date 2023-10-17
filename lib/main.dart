@@ -110,15 +110,30 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
     print("isUserLoggedIn - YES");
   }
 
+  var userDocumentId;
+
+  Future<void> getUserDocumentId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        // prefs.setString('isUserLoggedIn', 'false');
+        isUserLoggedIn = prefs.getString('userDocumentId');
+        print("userDocumentId value before removing $userDocumentId");
+      });
+    }
+    print("isUserLoggedIn - YES");
+  }
+
   @override
   void initState() {
     super.initState();
     checkIsUserLoggedIn();
+    getUserDocumentId();
     checkLocationPermission();
     // _checkBiometricAndNavigate();
   }
 
-  Future<void> checkBiometricAndNavigate() async {
+  Future<void> checkBiometricAndNavigate(BuildContext context) async {
     if (!_userSignedOut) {
       bool isAuthenticated = false;
 
@@ -133,22 +148,28 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
 
       if (isAuthenticated) {
         // Navigate to the plugin screen on successful authentication
+        await getUserDocumentId();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const PluginScreen()),
+          MaterialPageRoute(
+            builder: (context) =>
+                PluginScreen(
+                  currentUserId: userDocumentId,
+                ),
+          ),
         );
       } else {
         // Check if the device supports biometric authentication
-        if (await _localAuth.canCheckBiometrics) {
-          // Display a toast message if biometric authentication is not supported
-          Fluttertoast.showToast(
-            msg: 'Biometric authentication is not supported on this device.',
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-          );
-        }
+        // if (await _localAuth.canCheckBiometrics) {
+        //   // Display a toast message if biometric authentication is not supported
+        //   Fluttertoast.showToast(
+        //     msg: 'Biometric authentication is not supported on this device.',
+        //     toastLength: Toast.LENGTH_LONG,
+        //     gravity: ToastGravity.CENTER,
+        //     backgroundColor: Colors.red,
+        //     textColor: Colors.white,
+        //   );
+        // }
       }
     }
   }
@@ -161,15 +182,17 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
         if (snapshot.connectionState == ConnectionState.done) {
           User? user = snapshot.data;
           if (user != null && isUserLoggedIn == "true") {
-            // User is authenticated and logged in, navigate to the plugin screen
-            checkBiometricAndNavigate();
-            return const PluginScreen();
+            // User is authenticated and logged in, call checkBiometricAndNavigate
+            checkBiometricAndNavigate(context); // Pass the context
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ); // or any loading indicator
           } else {
             // User is not authenticated or not logged in, display the login screen
             return const LoginScreen();
           }
         } else {
-          return Scaffold(
+          return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
@@ -177,3 +200,4 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
     );
   }
 }
+
