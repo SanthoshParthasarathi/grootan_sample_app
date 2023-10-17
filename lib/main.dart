@@ -117,8 +117,8 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
     if (mounted) {
       setState(() {
         // prefs.setString('isUserLoggedIn', 'false');
-        isUserLoggedIn = prefs.getString('userDocumentId');
-        print("userDocumentId value before removing $userDocumentId");
+        userDocumentId = prefs.getString('userDocumentId');
+        print("userDocumentId value inside biometric bro $userDocumentId");
       });
     }
     print("isUserLoggedIn - YES");
@@ -140,7 +140,7 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
       try {
         isAuthenticated = await _localAuth.authenticate(
           localizedReason: 'Authenticate to access the app',
-          stickyAuth: true,
+          stickyAuth: false,
         );
       } catch (e) {
         print(e);
@@ -148,14 +148,13 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
 
       if (isAuthenticated) {
         // Navigate to the plugin screen on successful authentication
-        await getUserDocumentId();
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                PluginScreen(
-                  currentUserId: userDocumentId,
-                ),
+            builder: (context) => PluginScreen(
+              currentUserId: userDocumentId,
+            ),
           ),
         );
       } else {
@@ -200,4 +199,3 @@ class _AuthenticationWrapperState extends State<AuthenticationWrapper> {
     );
   }
 }
-

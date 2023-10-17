@@ -125,50 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // addDocumentIdToSF() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString('documentIdPrefs', documentReferenceId);
-  // }
-
-  // Future<void> startDelayedTask() async {
-  //   _showLoadingDialog();
-  //   await Future.delayed(const Duration(seconds: 3));
-  //   // ignore: use_build_context_synchronously
-  //   Navigator.of(context, rootNavigator: true).pop();
-  //   goToPluginScreen(context);
-  // }
-
-  void _showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible:
-          false, // Prevent dialog from being dismissed by tapping outside
-      builder: (context) {
-        return const AlertDialog(
-          backgroundColor: Colors.white,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16.0),
-              Text("Loading please wait.."),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> getIsUserLoggedInValueFromPluginScreen() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        isUserLoggedIn = prefs.getString('isUserLoggedIn');
-      });
-      // print("printing isUserLoggedIn testing value here");
-    }
-  }
-
   @override
   void initState() {
     // TODO: implement initState
@@ -196,12 +152,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       setState(() {
         prefs.setString('userDocumentId', currentId);
-        userDocumentId = prefs.getString('isUserLoggedIn');
+        userDocumentId = prefs.getString('userDocumentId');
       });
     }
     print("userDocumentId - YES");
     print("user document id which is saved $userDocumentId");
   }
+
+  bool isLoading = false;
 
   void verifyOTP() async {
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
@@ -211,11 +169,13 @@ class _LoginScreenState extends State<LoginScreen> {
     await getIPAddress();
     print("Prints IP above");
     await checkLocationPermission();
+
     print("Prints city name above");
     // await setBoolValue();
     print("isUserLoggedIn - Yes Yes");
     print("entering store user details function");
     await storeUserDetails();
+
     print("User details stored successfully");
     // await startDelayedTask();
     await Fluttertoast.showToast(
@@ -239,18 +199,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? documentReferenceIdTesting;
 
-  Future<void> getDocumentReferenceId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        documentReferenceIdTesting = prefs.getString('documentReferenceId');
-      });
-    }
-  }
-
   Future<void> storeUserDetails() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      setState(() {
+        isLoading = true;
+      });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        // Prevent user interaction with underlying content
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(), // Loader
+                SizedBox(height: 10),
+                Text("Please wait, authenticating..."), // Loading message
+              ],
+            ),
+          );
+        },
+      );
       String uid = user.uid;
       String currentDateTime = getCurrentDateTime();
       print("hello from storeUserDetails");
@@ -290,8 +261,15 @@ class _LoginScreenState extends State<LoginScreen> {
       print(_cityName);
       print(currentDateTime);
       print("Inside store user details function");
-      await Future.delayed(const Duration(seconds: 3), () {
+      setState(() {
+        isLoading = false;
+      });
+      if (isLoading == false) {
+        Navigator.pop(context);
+      }
+      await Future.delayed(const Duration(seconds: 1), () {
         // Use the Navigator to navigate to a new page
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
               builder: (context) => PluginScreen(
@@ -355,9 +333,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: purpleBackgroundColor,
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      // ),
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: Stack(

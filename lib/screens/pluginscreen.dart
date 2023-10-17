@@ -125,7 +125,7 @@ class _PluginScreenState extends State<PluginScreen> {
 
   String documentId = "";
 
-//// save qrstring and qr image to firebase
+/// save qrstring and qr image to firebase
   Future<void> saveQrString(String qrCodeString) async {
     // Generate the QR code image and encode it in base64
     final qrCodeImage = await generateQRCodeImage(qrCodeString);
@@ -180,6 +180,19 @@ class _PluginScreenState extends State<PluginScreen> {
     });
   }
 
+  var userDocumentId;
+  Future<void> getUserDocumentId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        // prefs.setString('isUserLoggedIn', 'false');
+        userDocumentId = prefs.getString('userDocumentId');
+        print("userDocumentId value inside biometric bro $userDocumentId");
+      });
+    }
+    print("isUserLoggedIn - YES");
+  }
+
   removeValues(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //Remove String
@@ -210,32 +223,11 @@ class _PluginScreenState extends State<PluginScreen> {
     print("prints document id ${widget.currentUserId} here");
     generateRandomString(6);
   }
-
-  //  itemsStream = FirebaseFirestore.instance
-  //       .collection('user_details')
-  //       .orderBy('datetime', descending: true)
-  //       .snapshots();
-
-  //   itemsStream.listen((itemsList) {
-  //     if (itemsList.docs.isNotEmpty) {
-  //       final lastDocument = itemsList.docs.first;
-  //       final datetime = lastDocument['datetime'] as String;
-  //       if (mounted) {
-  //         setState(() {
-  //           lastDatetime = datetime;
-  //         });
-  //       }
-  //     }
-  //   });
-  //   print("prints lastdatetime $lastDatetime");
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: purpleBackgroundColor,
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      // ),
+
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: Stack(
@@ -293,7 +285,8 @@ class _PluginScreenState extends State<PluginScreen> {
                             width: MediaQuery.of(context).size.width * 0.78,
                             height: MediaQuery.of(context).size.height * 0.08,
                             child: OutlinedButton(
-                              onPressed: () {
+                              onPressed: () async {
+                                await getUserDocumentId();
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
